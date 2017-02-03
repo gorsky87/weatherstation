@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function weatherstation_schema() {
+  $schema['weatherstation'] = array(
+    'description' => 'The base table for weatherstation.',
+    'fields' => array(
+      'wid' => array(
+        'description' => 'The primary identifier for a weatherstation.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Survey longitude.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'lon' => array(
+        'description' => 'Survey longitude.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'lat' => array(
+        'description' => 'Survey latitude',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'A timestamp with millisecond precision indicating when the cache entry was created.',
+        'type' => 'numeric',
+        'precision' => 14,
+        'scale' => 3,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'time' => array(
+        'description' => 'A timestamp with millisecond precision indicating when the cache entry was created.',
+        'type' => 'numeric',
+        'precision' => 14,
+        'scale' => 3,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'data' => array(
+        'description' => 'A collection of data to cache.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'normal',
+      ),
+    ),
+    'indexes' => array(
+      'weatherstation_created' => array('created'),
+    ),
+    'unique keys' => array(
+      'wid' => array('wid'),
+    ),
+    'primary key' => array('wid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function weatherstation_install() {
+  $assets_dir = drupal_get_path('module', 'weatherstation') . '/assets/images';
+  $weather_icons = \Drupal::service('weatherstation_type')->getWeatherTypeIcon();
+
+  foreach ($weather_icons as $icon_code => $weather_icon) {
+    $file_data = file_get_contents($assets_dir . '/' . $icon_code . '.jpg');
+    $file = file_save_data($file_data, 'public://weatherstation_' . $icon_code . '.jpg', FILE_EXISTS_REPLACE);
+    $file->setTemporary();
+    $file->save();
+    $config = \Drupal::service('config.factory')
+      ->getEditable('weatherstation.settings');
+    if ($file) {
+      $config->set($icon_code, (array($file->id())))->save();
+    }
+  }
+}

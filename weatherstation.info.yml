@@ -1,0 +1,6 @@
+name: Weatherstation
+type: module
+description: 'Weatherstation show box weather and get weather information from openweather'
+version: '8.x-1.1'
+core: '8.x'
+configure: weatherstation.settings

@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Configuration Update Base module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function config_update_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.config_update':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Configuration Update Base module provides functionality that other modules can use, related to updating and computing differences between configuration versions. This module does not provide any end-user functionality itself.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function weatherstation_page_attachments(array &$attachments) {
+
+  $config = \Drupal::service('config.factory')
+    ->getEditable('weatherstation.settings');
+
+  $weather_icons = \Drupal::service('weatherstation_type')
+    ->getWeatherTypeIcon();
+
+  foreach ($weather_icons as $icon_code => $weather_icon) {
+
+    if (isset($config->get($icon_code)[0])) {
+      $file = \Drupal\file\Entity\File::load($config->get($icon_code)[0]);
+      if ($file) {
+        $path = $file->getFileUri($file);
+        $wrapper = \Drupal::service('stream_wrapper_manager')
+          ->getViaUri($path);
+        $photos[$icon_code] = $wrapper->getExternalUrl();
+      }
+      $slogans[$icon_code] = $config->get($icon_code . '_slogan');
+    }
+  }
+
+
+  $attachments['#attached']['drupalSettings']['weatherstation_settings']['id'] = $config->get('weatherstation_id_container');
+  $attachments['#attached']['drupalSettings']['weatherstation_settings']['photos'] = $photos;
+  $attachments['#attached']['drupalSettings']['weatherstation_settings']['slogans'] = $slogans;
+  $attachments['#attached']['library'][] = 'weatherstation/weatherstation_library';
+
+}

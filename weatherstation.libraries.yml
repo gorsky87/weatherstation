@@ -1,0 +1,7 @@
+weatherstation_library:
+  version: 1.x
+  css:
+    theme:
+      css/weatherstation.css: {}
+  js:
+    js/weatherstation.js: {}
